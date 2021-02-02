@@ -1,32 +1,33 @@
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-	const User = sequelize.define(
-		'User',
+	const Operation = sequelize.define(
+		'Operation',
 		{
 			id: {
 				type: DataTypes.INTEGER,
 				primaryKey: true,
 				autoIncrement: true,
 			},
-			name: {
-				type: DataTypes.STRING(40),
+			user_id: {
+				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
-			email: {
-				type: DataTypes.STRING(40),
-				allowNull: false,
-				validate: {
-					isEmail: true,
-				},
-				unique: true,
-			},
-			password: {
+			concept: {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
-			balance: {
+			amount: {
 				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
+			creation: {
+				type: DataTypes.DATE,
+				allowNull: false,
+			},
+			type: {
+				type: DataTypes.ENUM,
+				values: ['egreso', 'ingreso'],
 				allowNull: false,
 			},
 		},
@@ -35,5 +36,5 @@ module.exports = (sequelize) => {
 		}
 	);
 
-	return User;
+	return Operation;
 };

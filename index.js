@@ -2,8 +2,6 @@ const express = require('express');
 require('dotenv').config(`${__dirname}\\.env`);
 const morgan = require('morgan');
 const cors = require('cors');
-const { connectDB } = require('./src/database/database');
-const { validateJWT } = require('./src/middlewares/validateJWT');
 
 // Server
 const app = express();
@@ -22,10 +20,9 @@ app.use(morgan('dev'));
 
 // Routes
 app.use('/api/auth', require('./src/routes/auth'));
-app.use('/api/operations', validateJWT, require('./src/routes/operations'));
+app.use('/api/operations', require('./src/routes/operations'));
 
 // Port listening
 app.listen(process.env.PORT, () => {
 	console.log(`Listening http://localhost:${process.env.PORT}`);
-	connectDB();
 });

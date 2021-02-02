@@ -1,10 +1,9 @@
 const { response } = require('express');
 const chalk = require('chalk');
 const bcrypt = require('bcryptjs');
-const {
-	models: { User },
-} = require('../database/database');
 const { generateJWT } = require('../helpers/jwt');
+
+const { User } = require('../database/database');
 
 const createUser = async (req, res = response) => {
 	const { email, password } = req.body;
@@ -59,7 +58,6 @@ const loginUser = async (req, res = response) => {
 			where: { email },
 		});
 
-		console.log(user);
 		if (!user) {
 			return res.status(400).json({
 				ok: false,

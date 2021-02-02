@@ -1,7 +1,6 @@
 const { Sequelize } = require('sequelize');
 const { databaseCredentials } = require('./config');
 const chalk = require('chalk');
-const userModel = require('../models/User');
 
 const sequelizeInstance = new Sequelize(
 	databaseCredentials.database,
@@ -13,9 +12,21 @@ const sequelizeInstance = new Sequelize(
 	}
 );
 
-const User = userModel(sequelizeInstance);
+const db = {};
 
-const connectDB = async () => {
+db.Sequelize = Sequelize;
+db.sequelize = sequelizeInstance;
+
+// Models/tables
+db.User = require('../models/User')(sequelizeInstance);
+db.Operation = require('../models/Operation')(sequelizeInstance);
+
+// Relations
+db.Operation.belongsTo(db.User);
+db.User.hasMany(db.Operation);
+
+// Connect DB
+(async () => {
 	try {
 		await sequelizeInstance.sync({ force: false });
 		console.log(chalk.magenta('DB Connected successfully !'));
@@ -23,11 +34,6 @@ const connectDB = async () => {
 		console.log(chalk.red(`Error connecting to database.`));
 		console.log(chalk.yellow(error));
 	}
-};
+})();
 
-module.exports = {
-	connectDB,
-	models: {
-		User,
-	},
-};
+module.exports = db;
