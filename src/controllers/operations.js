@@ -83,7 +83,7 @@ const createOperation = async (req, res = response) => {
 
 const updateOperation = async (req, res = response) => {
 	const { id } = req.params;
-	const { uid, name } = req;
+	const { uid } = req;
 
 	try {
 		const operation = await Operation.findOne({
@@ -132,10 +132,48 @@ const updateOperation = async (req, res = response) => {
 	}
 };
 
-const deleteOperation = (req, res = response) => {
-	res.json({
-		msg: 'delete operation',
-	});
+const deleteOperation = async (req, res = response) => {
+	const { id } = req.params;
+	const { uid } = req;
+
+	try {
+		const operation = await Operation.findOne({
+			where: { id },
+		});
+
+		if (!operation) {
+			return res.status(404).json({
+				ok: false,
+				msg: 'There is no operation with that id',
+			});
+		}
+
+		// Validate operation.user.id === req.uid
+		if (operation.user_id !== uid) {
+			return res.status(401).json({
+				ok: false,
+				msg: `User doesn't have privileges to edit this operation - Unauthorized`,
+			});
+		}
+
+		const [result] = await Operation.destroy({
+			where: { id },
+		});
+
+		if (result !== 0 && result) {
+			res.status(200).json({
+				ok: true,
+				msg: 'deleted successfully',
+			});
+		}
+	} catch (error) {
+		console.log(chalk.bgRed(error));
+
+		res.status(500).json({
+			ok: false,
+			msg: 'Please talk to the administrator.',
+		});
+	}
 };
 
 module.exports = {
