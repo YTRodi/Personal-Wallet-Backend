@@ -1,6 +1,7 @@
 const { response } = require('express');
 const chalk = require('chalk');
 const { User, Operation } = require('../database/database');
+const { checkBalanceAmount } = require('../helpers/validateOperation');
 
 const getOperations = async (req, res = response) => {
 	try {
@@ -40,6 +41,8 @@ const getOperations = async (req, res = response) => {
 };
 
 const createOperation = async (req, res = response) => {
+	const { uid } = req;
+
 	try {
 		let operation = {
 			...req.body,
@@ -47,12 +50,78 @@ const createOperation = async (req, res = response) => {
 			creation: new Date(),
 		};
 
-		let newOperation = await Operation.create(operation);
-
-		res.status(201).json({
-			ok: true,
-			newOperation,
+		// Verify
+		const user = await User.findOne({
+			where: { id: uid },
 		});
+
+		const modifiedUser = checkBalanceAmount(user, operation);
+
+		if (modifiedUser) {
+			// Update user.balance
+			const updatedUser = await User.update(modifiedUser, {
+				where: { id: uid },
+			});
+			console.log(updatedUser);
+
+			let newOperation = await Operation.create(operation);
+			res.status(201).json({
+				ok: true,
+				newOperation,
+			});
+		}
+	} catch (error) {
+		console.log(chalk.bgRed(error));
+
+		res.status(500).json({
+			ok: false,
+			msg: 'Please talk to the administrator.',
+			details: error.toString(),
+		});
+	}
+};
+
+const updateOperation = async (req, res = response) => {
+	const { id } = req.params;
+	const { uid, name } = req;
+
+	try {
+		const operation = await Operation.findOne({
+			where: { id },
+		});
+
+		if (!operation) {
+			return res.status(404).json({
+				ok: false,
+				msg: 'There is no operation with that id',
+			});
+		}
+
+		// Validate operation.user.id === req.uid
+		if (operation.user_id !== uid) {
+			return res.status(401).json({
+				ok: false,
+				msg: `User doesn't have privileges to edit this operation - Unauthorized`,
+			});
+		}
+
+		// Update
+		const updatedOperation = {
+			...req.body,
+			user_id: uid,
+		};
+
+		// I can't update the type ( business rules )
+		const [result] = await Operation.update(updatedOperation, {
+			where: { id },
+		});
+
+		if (result !== 0 && result) {
+			res.status(200).json({
+				ok: true,
+				operation: updatedOperation,
+			});
+		}
 	} catch (error) {
 		console.log(chalk.bgRed(error));
 
@@ -61,12 +130,6 @@ const createOperation = async (req, res = response) => {
 			msg: 'Please talk to the administrator.',
 		});
 	}
-};
-
-const updateOperation = (req, res = response) => {
-	res.json({
-		msg: 'update operation',
-	});
 };
 
 const deleteOperation = (req, res = response) => {
