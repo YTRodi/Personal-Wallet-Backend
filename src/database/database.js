@@ -2,15 +2,7 @@ const { Sequelize } = require('sequelize');
 const { databaseCredentials } = require('./config');
 const chalk = require('chalk');
 
-const sequelizeInstance = new Sequelize(
-	databaseCredentials.database,
-	databaseCredentials.user,
-	databaseCredentials.password,
-	{
-		host: databaseCredentials.host,
-		dialect: 'mysql',
-	}
-);
+const sequelizeInstance = new Sequelize(process.env.CONNECTION_URI);
 
 const db = {};
 
