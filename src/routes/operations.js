@@ -4,7 +4,7 @@
 */
 const express = require('express');
 const router = express.Router();
-const { list, add, update, del } = require('../controllers/operations');
+const { list, listByUserId, add, update, del } = require('../controllers/operations');
 const { validateJWT } = require('../middlewares/validateJWT');
 const { check } = require('express-validator');
 const { fieldsValidator } = require('../middlewares/fieldsValidator');
@@ -12,6 +12,7 @@ const { fieldsValidator } = require('../middlewares/fieldsValidator');
 router.use(validateJWT);
 
 router.get('/', list);
+router.get('/:id', listByUserId);
 
 router.post(
 	'/',

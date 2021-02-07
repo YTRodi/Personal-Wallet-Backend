@@ -40,6 +40,52 @@ const getOperations = async (req, res = response) => {
 	}
 };
 
+const getOperationsByUserId = async (req, res = response) => {
+	const { id } = req.params;
+
+	try {
+		const filteredResults = await Operation.findAll({
+			where: { user_id: id },
+			include: [{ model: User }],
+		});
+
+		if (!filteredResults) {
+			return res.status(500).json({
+				ok: false,
+				msg: 'Please talk to the administrator.',
+			});
+		}
+
+		const resultObj = filteredResults.map((operation) => {
+			const { User } = operation;
+
+			return {
+				id: operation.id,
+				concept: operation.concept,
+				amount: operation.amount,
+				creation: operation.creation,
+				type: operation.type,
+				user: {
+					id: User.id,
+					name: User.name,
+				},
+			};
+		});
+
+		res.status(200).json({
+			ok: true,
+			operations: resultObj,
+		});
+	} catch (error) {
+		console.log(chalk.bgRed(error));
+
+		res.status(500).json({
+			ok: false,
+			msg: 'Please talk to the administrator.',
+		});
+	}
+};
+
 const createOperation = async (req, res = response) => {
 	const { uid } = req;
 
@@ -178,6 +224,7 @@ const deleteOperation = async (req, res = response) => {
 
 module.exports = {
 	list: getOperations,
+	listByUserId: getOperationsByUserId,
 	add: createOperation,
 	update: updateOperation,
 	del: deleteOperation,
