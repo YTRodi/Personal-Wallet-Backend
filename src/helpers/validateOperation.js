@@ -18,7 +18,7 @@ const checkBalanceAmount = (user, operation) => {
 						...dataValues,
 						// Logic: when the amount is greater than the balance...
 						balance:
-							operation.amount >= dataValues.balance ? null : dataValues.balance - operation.amount,
+							operation.amount > dataValues.balance ? null : dataValues.balance - operation.amount,
 					};
 
 					break;
