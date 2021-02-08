@@ -179,8 +179,10 @@ const updateOperation = async (req, res = response) => {
 };
 
 const deleteOperation = async (req, res = response) => {
-	const { id } = req.params;
+	let { id } = req.params;
 	const { uid } = req;
+
+	id = parseInt(id);
 
 	try {
 		const operation = await Operation.findOne({
@@ -201,12 +203,11 @@ const deleteOperation = async (req, res = response) => {
 				msg: `User doesn't have privileges to edit this operation - Unauthorized`,
 			});
 		}
-
-		const [result] = await Operation.destroy({
+		const result = await Operation.destroy({
 			where: { id },
 		});
 
-		if (result !== 0 && result) {
+		if (result !== 0) {
 			res.status(200).json({
 				ok: true,
 				msg: 'deleted successfully',
